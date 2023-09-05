@@ -1,0 +1,108 @@
+########################### REPLICATION AND PITR ######################################
+#Step 1 — Configuring Continuous Archiving on the Database Cluster : 
+
+#create a new directory:
+
+mkdir database_archive
+
+#change permissions for writing : 
+
+sudo chown postgres:postgres database_archive 
+
+#Open the configuration file : 
+
+sudo nano /etc/postgresql/12/main/postgresql.conf
+
+#Use command “ctrl + w” and enter “archive_mode” :
+
+-uncomment the archive_mode by removing #  and change off to on
+
+#Uncomment the archive_command :
+
+-remove #
+-enter  like this archive_command = 'test ! -f /home/database_archive/%f && cp %p /home/database_archive/%f'
+
+save the file and exit
+
+#Restart the cluster :
+
+service postgresql restart
+
+#Archive cluster transaction : 
+
+sudo -u postgres psql -c "SELECT pg_switch_wal();"
+
+Step 2 — Performing a Physical Backup of the PostgreSQL Cluster
+
+#Location of data directory : 
+
+sudo -u postgres psql -c "SHOW data_directory;"
+ 
+#create a directory:
+
+mkdir database_backup
+
+#change permissions: 
+
+sudo chown postgres:postgres database_backup
+
+#Now that you have a directory for the backup, you need to perform a physical backup of the database cluster’s data files. Fortunately, PostgreSQL has the built-in pg_basebackup command that performs everything for you. Run the command as the postgres user:
+
+sudo -u postgres pg_basebackup -D /home/database_backup
+
+#Shutdown the database : 
+
+service postgresql stop
+
+#move the pg_wal directory to a different place
+
+sudo mv /var/lib/postgresql/12/main/pg_wal ~/
+
+#remove the /var/lib/postgresql/12/main
+
+sudo rm -rf /var/lib/postgresql/12/main
+
+#Copy all the files :
+
+sudo cp -a /home/database_backup/. /var/lib/postgresql/12/main/
+
+#Check that user is postgress : 
+
+sudo chown postgres:postgres /var/lib/postgresql/12/main
+
+#Update the permissions: 
+
+sudo chmod 700 /var/lib/postgresql/12/main
+
+#create .conf file to enter details of recovery time : 
+
+sudo nano /var/lib/postgresql/12/main/recovery.conf
+
+#Enter following details:
+
+recovery_target_time = '2023-08-31 14:18:20'   ( Enter your required date and time )
+
+exit
+
+
+#Stop the cluster: 
+
+service postgresql stop
+
+#Open configuration file :
+
+sudo nano /etc/postgresql/12/main/postgresql.conf
+
+search “file location” using command “ctrl+w”
+
+locate and change  as     data_directory = '/home/database_backup'
+
+save and exit
+
+#START POSTGRESQL:
+
+service postgresql start
+
+#Enter following details:
+
+sudo tail -f /var/log/postgresql/postgresql-12-main.log    - - -  If it succeed  - - -  task done.
