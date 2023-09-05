@@ -1,0 +1,72 @@
+################ IN THIS FILE WE CONFIGURE POSTGRESQL AND CREATE DATABASE ################################
+#First we need to run a ubuntu container:
+ 
+docker run -it --name ubuntu1 ubuntu:20.04 bash
+
+#Go to home directory:
+
+cd home
+
+#Than  we have to update by using this command : 
+
+apt update
+
+#Than we need to install postgresql by using following command : 
+
+apt install postgresql postgresql-contrib
+
+Select your region ( For asia enter 6 and than select city karachi by entering 40 )
+
+#If postgres status is down use following command to up the postgres:
+
+pg_ctlcluster 12 main start
+
+#To check postgresql status: 
+
+pg_lsclusters
+
+
+#Enter into postgres shell use command : 
+
+su - postgres
+
+psql
+
+#create user with password :
+
+CREATE USER myuser1 WITH PASSWORD 'mypassword';
+
+#create database : 
+
+CREATE DATABASE mydb;
+
+#Grant privileges : 
+
+GRANT ALL PRIVILEGES ON DATABASE mydb TO myuser1;
+
+#Use DB:
+
+\c mydb
+
+#create table : 
+
+CREATE TABLE users5 (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL
+);
+
+#Enter data : 
+
+INSERT INTO users5 (username, email) VALUES ('john_doe', 'john@example.com');
+
+
+#To see data : 
+
+SELECT * FROM users5;
+
+#exit db and come in home directory:
+
+\q
+exit
+cd /home
